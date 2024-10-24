@@ -1,0 +1,23 @@
+- name: Install zsh
+  apt:
+    name: zsh
+    state: present
+    update_cache: yes
+- name: Change shell
+  shell: chsh -s `which zsh`
+- name: Download OhMyZsh installation script
+  get_url:
+    url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+    dest: /tmp/install_ohmyzsh.sh
+- name: Run OhMyZsh installation script
+  command: sh /tmp/install_ohmyzsh.sh
+  register: ohmyzsh_result
+  failed_when: "'FAILED' in ohmyzsh_result.stderr"
+- name: Install the zsh plugin for autosuggestions
+  ansible.builtin.git:
+    repo: 'https://github.com/zsh-users/zsh-autosuggestions.git'
+    dest: "~/.oh-my-zsh/plugins/zsh-autosuggestions"
+- name: aupdate our zshrc
+  shell: sed -i 's/(git/(git zsh-autosuggestions/' ~/.zshrc
+
+

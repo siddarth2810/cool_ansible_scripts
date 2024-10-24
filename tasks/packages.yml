@@ -1,0 +1,26 @@
+- name: Install packages
+  become: true
+  apt:
+    name: [ "tmux", "wireshark", "fzf", "xclip", "tldr", "ripgrep"]
+  tags:
+    - install
+    - productivity
+- name: Get latest Obsidian release
+  uri:
+    url: https://api.github.com/repos/obsidianmd/obsidian-releases/releases/latest
+    return_content: yes
+  register: latest_release
+
+- name: Set obsidian_version
+  set_fact:
+    obsidian_version: "{{ latest_release.json.tag_name | regex_replace('^v', '') }}"
+
+- name: Download Obsidian
+  get_url:
+    url: "https://github.com/obsidianmd/obsidian-releases/releases/download/v{{ obsidian_version }}/obsidian_{{ obsidian_version }}_amd64.deb"
+    dest: /tmp/obsidian.deb
+
+- name: Install Obsidian
+  become: true
+  apt:
+    deb: /tmp/obsidian.deb
